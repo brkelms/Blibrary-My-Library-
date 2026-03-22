@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kişisel Kütüphanem - İstatistikler</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const savedLang = localStorage.getItem('lang') || 'tr';
+        document.documentElement.lang = savedLang;
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #f4f6f9; --bg-card: #ffffff; --text-main: #2b3452; --text-muted: #6c757d; 
+            --border-color: #e9ecef; --title-color: #1e3c72; --navbar-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        [data-theme="dark"] {
+            --bg-main: #121212; --bg-card: #1e1e1e; --text-main: #e0e0e0; --text-muted: #a0a0a0; 
+            --border-color: #333333; --title-color: #66b2ff; --navbar-bg: linear-gradient(135deg, #0f203c 0%, #15294b 100%);
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-main); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        .navbar { background: var(--navbar-bg); padding: 1rem 0; }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; letter-spacing: 0.5px; }
+        .nav-link { font-weight: 500; transition: color 0.3s; }
+        .stat-card { background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); padding: 1.5rem; text-align: center; border: 1px solid var(--border-color); transition: all 0.3s; height: 100%; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-icon { font-size: 2.2rem; margin-bottom: 10px; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--title-color); margin-bottom: 0; transition: color 0.3s;}
+        .stat-label { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; }
+        .chart-container { background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color); transition: all 0.3s; height: 100%; }
+        .chart-title { font-size: 1.05rem; font-weight: 600; color: var(--text-main); margin-bottom: 1rem; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
+        .page-title { color: var(--title-color); }
+        .canvas-wrapper { position: relative; height: 250px; width: 100%; display: flex; justify-content: center; }
+        #worldMap { width: 100%; height: 450px; }
+        .country-flag { width: 20px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 6px; box-shadow: 0 0 3px rgba(0,0,0,0.2); vertical-align: middle; }
+        .nav-flag { width: 24px; height: 18px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow">
+        <div class="container">
+            <a class="navbar-brand" href="index.html" data-i18n="navBrand"><i class="bi bi-book-half me-2"></i>Kütüphanem</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-journal-text me-1"></i> <span data-i18n="navBooks">Okuduğum Kitaplar</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="ekle.html"><i class="bi bi-gear me-1"></i> <span data-i18n="navManage">Kütüphane Yönetimi</span></a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="istatistik.html"><i class="bi bi-bar-chart-line me-1"></i> <span data-i18n="navStats">İstatistikler</span></a></li>
+                    
+                    <li class="nav-item dropdown ms-lg-3 mt-2 mt-lg-0">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://flagcdn.com/24x18/tr.png" alt="Language" id="currentLangFlag" class="country-flag nav-flag m-0">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="langDropdown" style="min-width: 140px;">
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="tr"><img src="https://flagcdn.com/24x18/tr.png" class="country-flag"> Türkçe</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="en"><img src="https://flagcdn.com/24x18/gb.png" class="country-flag"> English</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="de"><img src="https://flagcdn.com/24x18/de.png" class="country-flag"> Deutsch</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="fr"><img src="https://flagcdn.com/24x18/fr.png" class="country-flag"> Français</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ar"><img src="https://flagcdn.com/24x18/sa.png" class="country-flag"> العربية</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ru"><img src="https://flagcdn.com/24x18/ru.png" class="country-flag"> Русский</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="zh"><img src="https://flagcdn.com/24x18/cn.png" class="country-flag"> 中文</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ko"><img src="https://flagcdn.com/24x18/kr.png" class="country-flag"> 한국어</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><button class="btn btn-outline-light rounded-pill px-3" id="themeToggle" title="Gece/Gündüz Modu"><i class="bi bi-moon-fill" id="themeIcon"></i></button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <h2 class="fw-bold text-center mb-4 page-title" data-i18n="pageTitle">Kapsamlı İstatistikler</h2>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-bookshelf stat-icon text-primary"></i><p class="stat-value" id="statTotalBooks">0</p><p class="stat-label" data-i18n="statTotalBooks">Toplam Kitap</p></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-file-earmark-text stat-icon text-success"></i><p class="stat-value" id="statTotalPages">0</p><p class="stat-label" data-i18n="statTotalPages">Okunan Sayfa</p></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-people stat-icon text-info"></i><p class="stat-value" id="statTotalAuthors">0</p><p class="stat-label" data-i18n="statAuthors">Farklı Yazar</p></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><i class="bi bi-star-fill stat-icon text-warning"></i><p class="stat-value" id="statAvgRating">0.0</p><p class="stat-label" data-i18n="statAvgRating">Ortalama Puan</p></div></div>
+        </div>
+
+        <div class="row g-3 mb-3"><div class="col-12"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-globe-americas me-2"></i><span data-i18n="chartMap">Edebiyat Haritası</span></h4><div id="worldMap"></div></div></div></div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-calendar-check me-2"></i><span data-i18n="chartYearsBooks">Yıllara Göre Okunan Kitap</span></h4><div class="canvas-wrapper"><canvas id="yearsChart"></canvas></div></div></div>
+            <div class="col-lg-6"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-graph-up me-2"></i><span data-i18n="chartYearsPages">Yıllara Göre Sayfa Sayısı</span></h4><div class="canvas-wrapper"><canvas id="pagesYearChart"></canvas></div></div></div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-person-lines-fill me-2"></i><span data-i18n="chartAuthors">En Çok Okunan 5 Yazar</span></h4><div class="canvas-wrapper"><canvas id="authorChart"></canvas></div></div></div>
+            <div class="col-lg-6"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-stars me-2"></i><span data-i18n="chartRatings">Puanlama Dağılımı</span></h4><div class="canvas-wrapper"><canvas id="ratingChart"></canvas></div></div></div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-4 col-md-6"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-tablet me-2"></i><span data-i18n="chartFormat">Format Dağılımı</span></h4><div class="canvas-wrapper"><canvas id="formatChart"></canvas></div></div></div>
+            <div class="col-lg-4 col-md-6"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-flag me-2"></i><span data-i18n="chartCountry">Ülke Dağılımı</span></h4><div class="canvas-wrapper"><canvas id="countryChart"></canvas></div></div></div>
+            <div class="col-lg-4 col-md-12"><div class="chart-container"><h4 class="chart-title"><i class="bi bi-translate me-2"></i><span data-i18n="chartLang">Orijinal Dil Dağılımı</span></h4><div class="canvas-wrapper"><canvas id="languageChart"></canvas></div></div></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const i18n = {
+            tr: { navBrand: "<i class='bi bi-book-half me-2'></i>Kütüphanem", navBooks: "Okuduğum Kitaplar", navManage: "Kütüphane Yönetimi", navStats: "İstatistikler", pageTitle: "Kapsamlı İstatistikler", statTotalBooks: "Toplam Kitap", statTotalPages: "Okunan Sayfa", statAuthors: "Farklı Yazar", statAvgRating: "Ortalama Puan", chartMap: "Edebiyat Haritası - Okunan Ülkeler", chartYearsBooks: "Yıllara Göre Okunan Kitap", chartYearsPages: "Yıllara Göre Sayfa Sayısı", chartAuthors: "En Çok Okunan 5 Yazar", chartRatings: "Puanlama Dağılımı", chartFormat: "Format Dağılımı", chartCountry: "Ülke Dağılımı", chartLang: "Orijinal Dil Dağılımı", lblCountry: "Ülke", lblBooksRead: "Okunan Kitap", lblPagesRead: "Okunan Sayfa", lblBookCount: "Kitap Sayısı", lblOther: "Diğer", lblRatingSuffix: "Puan", lblBookWord: "kitap", fmtPrint: "Basılı Kitap", fmtEbook: "E-Kitap", fmtAudio: "Sesli", fmtUnknown: "Bilinmeyen" },
+            en: { navBrand: "<i class='bi bi-book-half me-2'></i>My Library", navBooks: "Read Books", navManage: "Library Management", navStats: "Statistics", pageTitle: "Comprehensive Statistics", statTotalBooks: "Total Books", statTotalPages: "Pages Read", statAuthors: "Different Authors", statAvgRating: "Average Rating", chartMap: "Literature Map - Countries", chartYearsBooks: "Books Read by Year", chartYearsPages: "Pages Read by Year", chartAuthors: "Top 5 Most Read Authors", chartRatings: "Rating Distribution", chartFormat: "Format Distribution", chartCountry: "Country Distribution", chartLang: "Language Distribution", lblCountry: "Country", lblBooksRead: "Books Read", lblPagesRead: "Pages Read", lblBookCount: "Book Count", lblOther: "Other", lblRatingSuffix: "Stars", lblBookWord: "books", fmtPrint: "Print Book", fmtEbook: "E-Book", fmtAudio: "Audiobook", fmtUnknown: "Unknown" },
+            de: { navBrand: "<i class='bi bi-book-half me-2'></i>Meine Bibliothek", navBooks: "Gelesene Bücher", navManage: "Bibliotheksverwaltung", navStats: "Statistiken", pageTitle: "Umfassende Statistiken", statTotalBooks: "Bücher Gesamt", statTotalPages: "Gelesene Seiten", statAuthors: "Verschiedene Autoren", statAvgRating: "Durchschnittsbewertung", chartMap: "Literaturkarte - Länder", chartYearsBooks: "Bücher nach Jahr", chartYearsPages: "Seiten nach Jahr", chartAuthors: "Top 5 Autoren", chartRatings: "Bewertungsverteilung", chartFormat: "Formatverteilung", chartCountry: "Länderverteilung", chartLang: "Sprachenverteilung", lblCountry: "Land", lblBooksRead: "Gelesene Bücher", lblPagesRead: "Gelesene Seiten", lblBookCount: "Buchanzahl", lblOther: "Andere", lblRatingSuffix: "Sterne", lblBookWord: "Bücher", fmtPrint: "Gedrucktes Buch", fmtEbook: "E-Book", fmtAudio: "Hörbuch", fmtUnknown: "Unbekannt" },
+            fr: { navBrand: "<i class='bi bi-book-half me-2'></i>Ma Bibliothèque", navBooks: "Livres Lus", navManage: "Gestion", navStats: "Statistiques", pageTitle: "Statistiques", statTotalBooks: "Total Livres", statTotalPages: "Pages Lues", statAuthors: "Auteurs", statAvgRating: "Note Moyenne", chartMap: "Carte Littéraire - Pays", chartYearsBooks: "Livres par Année", chartYearsPages: "Pages par Année", chartAuthors: "Top 5 Auteurs", chartRatings: "Notes", chartFormat: "Formats", chartCountry: "Pays", chartLang: "Langues", lblCountry: "Pays", lblBooksRead: "Livres Lus", lblPagesRead: "Pages Lues", lblBookCount: "Nombre de Livres", lblOther: "Autre", lblRatingSuffix: "Étoiles", lblBookWord: "livres", fmtPrint: "Imprimé", fmtEbook: "E-Book", fmtAudio: "Audio", fmtUnknown: "Inconnu" },
+            ar: { navBrand: "<i class='bi bi-book-half me-2'></i>مكتبتي", navBooks: "الكتب المقروءة", navManage: "الإدارة", navStats: "إحصائيات", pageTitle: "إحصائيات شاملة", statTotalBooks: "إجمالي الكتب", statTotalPages: "الصفحات المقروءة", statAuthors: "المؤلفون", statAvgRating: "متوسط التقييم", chartMap: "خريطة أدبية - الدول", chartYearsBooks: "الكتب حسب السنة", chartYearsPages: "الصفحات حسب السنة", chartAuthors: "أفضل 5 مؤلفين", chartRatings: "توزيع التقييمات", chartFormat: "توزيع التنسيقات", chartCountry: "توزيع الدول", chartLang: "توزيع اللغات", lblCountry: "الدولة", lblBooksRead: "كتب مقروءة", lblPagesRead: "صفحات مقروءة", lblBookCount: "عدد الكتب", lblOther: "أخرى", lblRatingSuffix: "نجوم", lblBookWord: "كتب", fmtPrint: "مطبوع", fmtEbook: "إلكتروني", fmtAudio: "صوتي", fmtUnknown: "غير معروف" },
+            ru: { navBrand: "<i class='bi bi-book-half me-2'></i>Библиотека", navBooks: "Прочитанные", navManage: "Управление", navStats: "Статистика", pageTitle: "Статистика", statTotalBooks: "Всего Книг", statTotalPages: "Страниц", statAuthors: "Авторы", statAvgRating: "Средняя Оценка", chartMap: "Литературная Карта", chartYearsBooks: "Книги по Годам", chartYearsPages: "Страницы по Годам", chartAuthors: "Топ 5 Авторов", chartRatings: "Оценки", chartFormat: "Форматы", chartCountry: "Страны", chartLang: "Языки", lblCountry: "Страна", lblBooksRead: "Прочитано", lblPagesRead: "Страниц", lblBookCount: "Кол-во Книг", lblOther: "Другое", lblRatingSuffix: "Звезд", lblBookWord: "книг", fmtPrint: "Печатная", fmtEbook: "Электронная", fmtAudio: "Аудио", fmtUnknown: "Неизвестно" },
+            zh: { navBrand: "<i class='bi bi-book-half me-2'></i>我的图书馆", navBooks: "已读图书", navManage: "管理", navStats: "统计", pageTitle: "综合统计", statTotalBooks: "总数", statTotalPages: "总页数", statAuthors: "作者数", statAvgRating: "平均分", chartMap: "文学地图 - 国家", chartYearsBooks: "每年阅读数量", chartYearsPages: "每年阅读页数", chartAuthors: "前5名作者", chartRatings: "评分分布", chartFormat: "格式分布", chartCountry: "国家分布", chartLang: "语言分布", lblCountry: "国家", lblBooksRead: "已读图书", lblPagesRead: "已读页数", lblBookCount: "图书数量", lblOther: "其他", lblRatingSuffix: "星", lblBookWord: "本", fmtPrint: "纸质书", fmtEbook: "电子书", fmtAudio: "有声书", fmtUnknown: "未知" },
+            ko: { navBrand: "<i class='bi bi-book-half me-2'></i>내 도서관", navBooks: "읽은 책", navManage: "관리", navStats: "통계", pageTitle: "종합 통계", statTotalBooks: "총 권수", statTotalPages: "총 페이지", statAuthors: "저자 수", statAvgRating: "평균 평점", chartMap: "문학 지도 - 국가", chartYearsBooks: "연도별 도서", chartYearsPages: "연도별 페이지", chartAuthors: "상위 5 저자", chartRatings: "평점 분포", chartFormat: "형식 분포", chartCountry: "국가 분포", chartLang: "언어 분포", lblCountry: "국가", lblBooksRead: "읽은 책", lblPagesRead: "읽은 페이지", lblBookCount: "책 수량", lblOther: "기타", lblRatingSuffix: "별", lblBookWord: "권", fmtPrint: "종이책", fmtEbook: "전자책", fmtAudio: "오디오북", fmtUnknown: "알 수 없음" }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'tr';
+        let globalBooksData = [];
+        let chartInstances = [];
+
+        function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) el.innerHTML = i18n[lang][key];
+            });
+
+            const flags = { 'tr': 'tr', 'en': 'gb', 'de': 'de', 'fr': 'fr', 'ar': 'sa', 'ru': 'ru', 'zh': 'cn', 'ko': 'kr' };
+            document.getElementById('currentLangFlag').src = `https://flagcdn.com/24x18/${flags[lang]}.png`;
+
+            if (globalBooksData.length > 0) {
+                drawCharts(globalBooksData);
+                if (typeof google !== 'undefined' && google.visualization && google.visualization.GeoChart) {
+                    drawWorldMap(globalBooksData);
+                }
+            }
+        }
+
+        document.querySelectorAll('.lang-select').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault(); currentLang = e.currentTarget.getAttribute('data-lang');
+                localStorage.setItem('lang', currentLang); applyLanguage(currentLang);
+            });
+        });
+
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        function updateIcon() { themeIcon.className = document.documentElement.getAttribute('data-theme') === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill'; }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', () => {
+            let newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); updateIcon();
+            if (globalBooksData.length > 0) { 
+                drawCharts(globalBooksData); 
+                if (typeof google !== 'undefined' && google.visualization && google.visualization.GeoChart) drawWorldMap(globalBooksData); 
+            }
+        });
+
+        function countBy(array, key) { return array.reduce((acc, obj) => { const val = obj[key]; if (val) acc[val] = (acc[val] || 0) + 1; return acc; }, {}); }
+
+        function getTopNWithOther(countsObj, n = 9) {
+            const sorted = Object.entries(countsObj).sort((a, b) => b[1] - a[1]);
+            const topN = sorted.slice(0, n), others = sorted.slice(n);
+            const resultLabels = topN.map(item => item[0]), resultData = topN.map(item => item[1]);
+            if (others.length > 0) {
+                resultLabels.push(i18n[currentLang].lblOther); resultData.push(others.reduce((sum, item) => sum + item[1], 0));
+            }
+            return { labels: resultLabels, data: resultData };
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch('kitaplar.json');
+                if (!response.ok) throw new Error('JSON okunamadı.');
+                globalBooksData = await response.json();
+
+                calculateSummaryStats(globalBooksData);
+                applyLanguage(currentLang);
+
+                google.charts.load('current', {'packages':['geochart'], 'language': currentLang});
+                google.charts.setOnLoadCallback(() => drawWorldMap(globalBooksData));
+            } catch (error) { console.error(error); }
+        }
+
+        function drawWorldMap(books) {
+            const countryCounts = countBy(books, 'country');
+            const l = i18n[currentLang];
+            const mapDataArray = [[l.lblCountry, l.lblBooksRead]];
+            
+            const countryToISO = { "Portekiz": "PT", "ABD": "US", "Birleşik Krallık": "GB", "Çekya": "CZ", "Almanya": "DE", "Avusturya": "AT", "Çin": "CN", "Brezilya": "BR", "İsrail": "IL", "Rusya": "RU", "Fransa": "FR", "Türkiye": "TR", "İspanya": "ES", "İtalya": "IT", "Japonya": "JP", "Yunanistan": "GR", "Kolombiya": "CO", "Norveç": "NO", "İran": "IR", "Afganistan": "AF", "Güney Afrika": "ZA", "İsveç": "SE", "Güney Kore": "KR", "Slovenya": "SI", "Danimarka": "DK", "Polonya": "PL", "Nijerya": "NG", "Macaristan": "HU", "Mısır": "EG", "Arjantin": "AR", "Hindistan": "IN", "Şili": "CL" };
+
+            for (const [countryName, count] of Object.entries(countryCounts)) { mapDataArray.push([countryToISO[countryName] || countryName, count]); }
+            
+            const data = google.visualization.arrayToDataTable(mapDataArray);
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            const options = {
+                colorAxis: {colors: isDark ? ['#3a5a8f', '#8fb0e8'] : ['#c6d8f5', '#1e3c72']},
+                backgroundColor: isDark ? '#1e1e1e' : '#ffffff',
+                datalessRegionColor: isDark ? '#2d2d2d' : '#f1f4f8', 
+                defaultColor: isDark ? '#444' : '#f5f5f5',
+                tooltip: {textStyle: {fontName: 'Poppins', color: '#2b3452'}}
+            };
+
+            const chart = new google.visualization.GeoChart(document.getElementById('worldMap'));
+            chart.draw(data, options);
+        }
+
+        function calculateSummaryStats(books) {
+            const totalBooks = books.length;
+            document.getElementById('statTotalBooks').textContent = totalBooks;
+            document.getElementById('statTotalPages').textContent = books.reduce((sum, b) => sum + (b.pages || 0), 0).toLocaleString('tr-TR');
+            document.getElementById('statTotalAuthors').textContent = new Set(books.map(b => b.author)).size;
+            document.getElementById('statAvgRating').textContent = totalBooks > 0 ? (books.reduce((sum, b) => sum + (b.rating || 0), 0) / totalBooks).toFixed(1) : 0;
+        }
+
+        function drawCharts(books) {
+            chartInstances.forEach(c => c.destroy());
+            chartInstances = [];
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#6c757d';
+            const gridColor = isDark ? '#333333' : '#e9ecef';
+            Chart.defaults.color = textColor;
+            const l = i18n[currentLang];
+
+            const pieChartOptions = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: {color: textColor} }, tooltip: { callbacks: { label: function(context) { let label = context.label || ''; if (label) { label += ': '; } let value = context.raw || 0; let total = context.chart.data.datasets[context.datasetIndex].data.reduce((a, b) => a + b, 0); return label + value + ' ' + l.lblBookWord + ' (' + ((value / total) * 100).toFixed(1) + '%)'; } } } } };
+            const barChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: {color: textColor}, grid: {color: gridColor} }, y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: {color: gridColor} } } };
+            const horizontalBarOptions = { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: {color: gridColor} }, y: { ticks: {color: textColor}, grid: {color: gridColor} } } };
+
+            const yearCounts = countBy(books, 'yearRead');
+            const pagesPerYear = books.reduce((acc, book) => { if (book.yearRead) acc[book.yearRead] = (acc[book.yearRead] || 0) + book.pages; return acc; }, {});
+            const sortedYears = Object.keys(yearCounts).sort();
+
+            chartInstances.push(new Chart(document.getElementById('yearsChart'), { type: 'bar', data: { labels: sortedYears, datasets: [{ label: l.lblBooksRead, data: sortedYears.map(y => yearCounts[y]), backgroundColor: '#0d6efd', borderRadius: 4 }] }, options: barChartOptions }));
+            chartInstances.push(new Chart(document.getElementById('pagesYearChart'), { type: 'line', data: { labels: sortedYears, datasets: [{ label: l.lblPagesRead, data: sortedYears.map(y => pagesPerYear[y]), borderColor: '#198754', backgroundColor: 'rgba(25, 135, 84, 0.2)', fill: true, tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: {color: textColor}, grid: {color: gridColor} }, y: { beginAtZero: true, ticks: {color: textColor}, grid: {color: gridColor} } } } }));
+
+            const authorCounts = countBy(books, 'author');
+            const sortedAuthors = Object.entries(authorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            chartInstances.push(new Chart(document.getElementById('authorChart'), { type: 'bar', data: { labels: sortedAuthors.map(a => a[0]), datasets: [{ label: l.lblBookCount, data: sortedAuthors.map(a => a[1]), backgroundColor: '#0dcaf0', borderRadius: 4 }] }, options: horizontalBarOptions }));
+
+            const ratingCounts = countBy(books, 'rating');
+            const ratingLabels = Object.keys(ratingCounts).sort((a,b) => a-b);
+            chartInstances.push(new Chart(document.getElementById('ratingChart'), { type: 'bar', data: { labels: ratingLabels.map(r => r + " " + l.lblRatingSuffix), datasets: [{ label: l.lblBookCount, data: ratingLabels.map(r => ratingCounts[r]), backgroundColor: '#ffc107', borderRadius: 4 }] }, options: barChartOptions }));
+
+            const extendedColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#8e44ad', '#2ecc71', '#bdc3c7'];
+
+            const formatCountsRaw = countBy(books, 'format');
+            const formatTranslationMap = { "Basılı Kitap": l.fmtPrint, "E-Kitap": l.fmtEbook, "Sesli": l.fmtAudio, "Bilinmeyen": l.fmtUnknown };
+            const formatLabels = Object.keys(formatCountsRaw).map(k => formatTranslationMap[k] || k);
+            
+            chartInstances.push(new Chart(document.getElementById('formatChart'), { type: 'doughnut', data: { labels: formatLabels, datasets: [{ data: Object.values(formatCountsRaw), backgroundColor: ['#2a5298', '#198754', '#f39c12', '#6c757d'], borderColor: isDark ? '#1e1e1e' : '#fff' }] }, options: pieChartOptions }));
+
+            const countryTop9 = getTopNWithOther(countBy(books, 'country'), 9);
+            chartInstances.push(new Chart(document.getElementById('countryChart'), { type: 'pie', data: { labels: countryTop9.labels, datasets: [{ data: countryTop9.data, backgroundColor: extendedColors.slice(0, countryTop9.labels.length), borderColor: isDark ? '#1e1e1e' : '#fff' }] }, options: pieChartOptions }));
+
+            const langTop9 = getTopNWithOther(countBy(books, 'originalLanguage'), 9);
+            chartInstances.push(new Chart(document.getElementById('languageChart'), { type: 'doughnut', data: { labels: langTop9.labels, datasets: [{ data: langTop9.data, backgroundColor: extendedColors.slice(0, langTop9.labels.length), borderColor: isDark ? '#1e1e1e' : '#fff' }] }, options: pieChartOptions }));
+        }
+
+        document.addEventListener('DOMContentLoaded', loadStatistics);
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kişisel Kütüphanem</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital@0;1&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const savedLang = localStorage.getItem('lang') || 'tr';
+        document.documentElement.lang = savedLang;
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #f4f6f9; --bg-card: #ffffff; --text-main: #2b3452; --text-muted: #6c757d; 
+            --border-color: #e9ecef; --input-bg: #ffffff; --review-bg: #f8f9fa; --title-color: #1e3c72; 
+            --navbar-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        [data-theme="dark"] {
+            --bg-main: #121212; --bg-card: #1e1e1e; --text-main: #e0e0e0; --text-muted: #a0a0a0; 
+            --border-color: #333333; --input-bg: #2d2d2d; --review-bg: #252525; --title-color: #66b2ff; 
+            --navbar-bg: linear-gradient(135deg, #0f203c 0%, #15294b 100%);
+        }
+
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-main); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        .navbar { background: var(--navbar-bg); padding: 1rem 0; }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; letter-spacing: 0.5px; }
+        .nav-link { font-weight: 500; transition: color 0.3s; }
+        
+        .filter-card { background-color: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: all 0.3s; }
+        .book-list-item { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 1.5rem; padding: 1.5rem; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .book-list-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: #0d6efd; border-radius: 12px 0 0 12px; }
+        .book-list-item:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        
+        .book-title, .page-title { font-weight: 700; color: var(--title-color) !important; margin-bottom: 0.2rem; }
+        .book-author { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+        .rating-badge { font-size: 1rem; padding: 0.6em 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .book-metadata { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-color); }
+        .meta-item { display: flex; align-items: center; font-size: 0.95rem; color: var(--text-main); }
+        .meta-item i { color: #2a5298; margin-right: 8px; font-size: 1.1rem; }
+        .review-box { font-family: 'Lora', serif; background-color: var(--review-bg); border-left: 4px solid var(--border-color); padding: 1.2rem; margin-top: 1.5rem; border-radius: 0 8px 8px 0; color: var(--text-main); font-size: 1.05rem; line-height: 1.6; }
+        
+        .form-control, .form-select, .input-group-text { background-color: var(--input-bg); color: var(--text-main); border-color: var(--border-color); }
+        .form-control:focus, .form-select:focus { background-color: var(--input-bg); color: var(--text-main); border-color: #0d6efd; }
+        .text-muted { color: var(--text-muted) !important; }
+        h2, h5 { color: var(--text-main); }
+
+        .loader { border: 4px solid var(--border-color); border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 2rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .country-flag { width: 20px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 6px; box-shadow: 0 0 3px rgba(0,0,0,0.2); vertical-align: middle; }
+        .nav-flag { width: 24px; height: 18px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-5 shadow">
+        <div class="container">
+            <a class="navbar-brand" href="index.html" data-i18n="navBrand"><i class="bi bi-book-half me-2"></i>Kütüphanem</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link active" href="index.html"><i class="bi bi-journal-text me-1"></i> <span data-i18n="navBooks">Okuduğum Kitaplar</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="ekle.html"><i class="bi bi-gear me-1"></i> <span data-i18n="navManage">Kütüphane Yönetimi</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="istatistik.html"><i class="bi bi-bar-chart-line me-1"></i> <span data-i18n="navStats">İstatistikler</span></a></li>
+                    
+                    <li class="nav-item dropdown ms-lg-3 mt-2 mt-lg-0">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://flagcdn.com/24x18/tr.png" alt="Language" id="currentLangFlag" class="country-flag nav-flag m-0">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="langDropdown" style="min-width: 140px;">
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="tr"><img src="https://flagcdn.com/24x18/tr.png" class="country-flag"> Türkçe</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="en"><img src="https://flagcdn.com/24x18/gb.png" class="country-flag"> English</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="de"><img src="https://flagcdn.com/24x18/de.png" class="country-flag"> Deutsch</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="fr"><img src="https://flagcdn.com/24x18/fr.png" class="country-flag"> Français</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ar"><img src="https://flagcdn.com/24x18/sa.png" class="country-flag"> العربية</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ru"><img src="https://flagcdn.com/24x18/ru.png" class="country-flag"> Русский</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="zh"><img src="https://flagcdn.com/24x18/cn.png" class="country-flag"> 中文</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ko"><img src="https://flagcdn.com/24x18/kr.png" class="country-flag"> 한국어</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                        <button class="btn btn-outline-light rounded-pill px-3" id="themeToggle" title="Gece/Gündüz Modu"><i class="bi bi-moon-fill" id="themeIcon"></i></button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold page-title" data-i18n="pageTitle">Okuduğum Kitaplar</h2>
+            <span class="text-muted"><i class="bi bi-info-circle me-1"></i> <span data-i18n="listInfo">Listede <span id="totalBooks" class="fw-bold" style="color: var(--text-main);">0</span> kitap var</span></span>
+        </div>
+
+        <div class="filter-card p-4 mb-4">
+            <h5 class="mb-3"><i class="bi bi-funnel me-2"></i><span data-i18n="filterTitle">Kitapları Filtrele</span></h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control" data-i18n="searchPlaceholder" placeholder="Kitap adı, yazar, format...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="ratingFilter" class="form-select">
+                        <option value="all" id="optAllRatings">Tüm Puanlar</option>
+                        <option value="9" id="optRating9">9 ve Üzeri (Harika)</option>
+                        <option value="7" id="optRating7">7 ve Üzeri (İyi)</option>
+                        <option value="5" id="optRating5">5 ve Üzeri (Orta)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="yearFilter" class="form-select"></select>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loadingIndicator" class="text-center"><div class="loader"></div><p class="text-muted mt-2" data-i18n="loading">Yükleniyor...</p></div>
+        <div id="bookList"></div>
+        <div id="noResultMessage" class="alert alert-warning text-center d-none mt-4" role="alert"><i class="bi bi-exclamation-triangle me-2"></i> <span data-i18n="noResult">Kitap bulunamadı.</span></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const i18n = {
+            tr: { navBrand: "<i class='bi bi-book-half me-2'></i>Kütüphanem", navBooks: "Okuduğum Kitaplar", navManage: "Kütüphane Yönetimi", navStats: "İstatistikler", pageTitle: "Okuduğum Kitaplar", listInfo: "Listede <span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> kitap var", filterTitle: "Kitapları Filtrele", searchPlaceholder: "Kitap adı, yazar, format...", allRatings: "Tüm Puanlar", rating9: "9 ve Üzeri (Harika)", rating7: "7 ve Üzeri (İyi)", rating5: "5 ve Üzeri (Orta)", allYears: "Tüm Yıllar", loading: "Kitaplar yükleniyor...", noResult: "Kriterlere uygun kitap bulunamadı.", metaCountry: "Ülke:", metaLang: "Dil:", metaPages: "Sayfa:", metaYear: "Yıl:", metaFormat: "Format:" },
+            en: { navBrand: "<i class='bi bi-book-half me-2'></i>My Library", navBooks: "Read Books", navManage: "Library Management", navStats: "Statistics", pageTitle: "Read Books", listInfo: "<span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> books in the list", filterTitle: "Filter Books", searchPlaceholder: "Title, author, format...", allRatings: "All Ratings", rating9: "9+ (Great)", rating7: "7+ (Good)", rating5: "5+ (Average)", allYears: "All Years", loading: "Loading...", noResult: "No books found.", metaCountry: "Country:", metaLang: "Language:", metaPages: "Pages:", metaYear: "Year:", metaFormat: "Format:" },
+            de: { navBrand: "<i class='bi bi-book-half me-2'></i>Bibliothek", navBooks: "Gelesene Bücher", navManage: "Bibliotheksverwaltung", navStats: "Statistiken", pageTitle: "Gelesene Bücher", listInfo: "<span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> Bücher in der Liste", filterTitle: "Bücher filtern", searchPlaceholder: "Titel, Autor, Format...", allRatings: "Alle Bewertungen", rating9: "9+ (Großartig)", rating7: "7+ (Gut)", rating5: "5+ (Durchschnitt)", allYears: "Alle Jahre", loading: "Laden...", noResult: "Keine Bücher gefunden.", metaCountry: "Land:", metaLang: "Sprache:", metaPages: "Seiten:", metaYear: "Jahr:", metaFormat: "Format:" },
+            fr: { navBrand: "<i class='bi bi-book-half me-2'></i>Bibliothèque", navBooks: "Livres Lus", navManage: "Gestion", navStats: "Statistiques", pageTitle: "Livres Lus", listInfo: "Il y a <span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> livres", filterTitle: "Filtrer les Livres", searchPlaceholder: "Titre, auteur, format...", allRatings: "Toutes les Notes", rating9: "9+ (Super)", rating7: "7+ (Bon)", rating5: "5+ (Moyen)", allYears: "Toutes les Années", loading: "Chargement...", noResult: "Aucun livre trouvé.", metaCountry: "Pays:", metaLang: "Langue:", metaPages: "Pages:", metaYear: "Année:", metaFormat: "Format:" },
+            ar: { navBrand: "<i class='bi bi-book-half me-2'></i>مكتبتي", navBooks: "الكتب المقروءة", navManage: "إدارة المكتبة", navStats: "إحصائيات", pageTitle: "الكتب المقروءة", listInfo: "يوجد <span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> كتب", filterTitle: "تصفية الكتب", searchPlaceholder: "العنوان، المؤلف، التنسيق...", allRatings: "كل التقييمات", rating9: "+9 (ممتاز)", rating7: "+7 (جيد)", rating5: "+5 (متوسط)", allYears: "كل السنوات", loading: "جاري التحميل...", noResult: "لم يتم العثور على كتب.", metaCountry: "الدولة:", metaLang: "اللغة:", metaPages: "الصفحات:", metaYear: "السنة:", metaFormat: "التنسيق:" },
+            ru: { navBrand: "<i class='bi bi-book-half me-2'></i>Библиотека", navBooks: "Прочитанные", navManage: "Управление", navStats: "Статистика", pageTitle: "Прочитанные Книги", listInfo: "В списке <span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> книг", filterTitle: "Фильтр", searchPlaceholder: "Название, автор, формат...", allRatings: "Все оценки", rating9: "9+ (Отлично)", rating7: "7+ (Хорошо)", rating5: "5+ (Средне)", allYears: "Все годы", loading: "Загрузка...", noResult: "Книги не найдены.", metaCountry: "Страна:", metaLang: "Язык:", metaPages: "Страницы:", metaYear: "Год:", metaFormat: "Формат:" },
+            zh: { navBrand: "<i class='bi bi-book-half me-2'></i>我的图书馆", navBooks: "已读图书", navManage: "图书馆管理", navStats: "统计", pageTitle: "已读图书", listInfo: "列表共有 <span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> 本书", filterTitle: "筛选图书", searchPlaceholder: "书名，作者，格式...", allRatings: "所有评分", rating9: "9分以上 (优秀)", rating7: "7分以上 (良好)", rating5: "5分以上 (中等)", allYears: "所有年份", loading: "加载中...", noResult: "未找到图书。", metaCountry: "国家:", metaLang: "语言:", metaPages: "页数:", metaYear: "年份:", metaFormat: "格式:" },
+            ko: { navBrand: "<i class='bi bi-book-half me-2'></i>내 도서관", navBooks: "읽은 책", navManage: "도서관 관리", navStats: "통계", pageTitle: "읽은 책", listInfo: "목록에 <span id='totalBooks' class='fw-bold' style='color: var(--text-main);'>0</span> 권의 책이 있습니다", filterTitle: "도서 필터링", searchPlaceholder: "제목, 저자, 형식...", allRatings: "모든 평점", rating9: "9점 이상 (훌륭함)", rating7: "7점 이상 (좋음)", rating5: "5점 이상 (보통)", allYears: "모든 연도", loading: "로딩 중...", noResult: "책을 찾을 수 없습니다.", metaCountry: "국가:", metaLang: "언어:", metaPages: "페이지:", metaYear: "연도:", metaFormat: "형식:" }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'tr';
+
+        function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.dir = lang === 'ar' ? 'rtl' : 'ltr'; // Arapça için sağdan sola hizalama
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) {
+                    if (el.tagName === 'INPUT' && el.type === 'text') el.placeholder = i18n[lang][key];
+                    else el.innerHTML = i18n[lang][key];
+                }
+            });
+
+            document.getElementById('optAllRatings').textContent = i18n[lang].allRatings;
+            document.getElementById('optRating9').textContent = i18n[lang].rating9;
+            document.getElementById('optRating7').textContent = i18n[lang].rating7;
+            document.getElementById('optRating5').textContent = i18n[lang].rating5;
+            
+            const yearSelect = document.getElementById('yearFilter');
+            if(yearSelect.options.length > 0) yearSelect.options[0].textContent = i18n[lang].allYears;
+
+            const flags = { 'tr': 'tr', 'en': 'gb', 'de': 'de', 'fr': 'fr', 'ar': 'sa', 'ru': 'ru', 'zh': 'cn', 'ko': 'kr' };
+            document.getElementById('currentLangFlag').src = `https://flagcdn.com/24x18/${flags[lang]}.png`;
+
+            if(fetchedBooks.length > 0) filterBooks();
+        }
+
+        document.querySelectorAll('.lang-select').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault(); currentLang = e.currentTarget.getAttribute('data-lang');
+                localStorage.setItem('lang', currentLang); applyLanguage(currentLang);
+            });
+        });
+
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        function updateIcon() { themeIcon.className = document.documentElement.getAttribute('data-theme') === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill'; }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', () => {
+            let newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); updateIcon();
+        });
+
+        let fetchedBooks = [];
+        const flagMap = { "Afganistan": "af", "Almanya": "de", "Amerika Birleşik Devletleri": "us", "ABD": "us", "Andorra": "ad", "Angola": "ao", "Arjantin": "ar", "Arnavutluk": "al", "Avustralya": "au", "Avusturya": "at", "Azerbaycan": "az", "Bahreyn": "bh", "Bangladeş": "bd", "Belçika": "be", "Beyaz Rusya": "by", "Birleşik Arap Emirlikleri": "ae", "Birleşik Krallık": "gb", "Bolivya": "bo", "Bosna-Hersek": "ba", "Brezilya": "br", "Bulgaristan": "bg", "Cezayir": "dz", "Çad": "td", "Çekya": "cz", "Çin": "cn", "Danimarka": "dk", "Dominik Cumhuriyeti": "do", "Ekvador": "ec", "El Salvador": "sv", "Endonezya": "id", "Ermenistan": "am", "Estonya": "ee", "Etiyopya": "et", "Fas": "ma", "Fildişi Sahili": "ci", "Filipinler": "ph", "Filistin": "ps", "Finlandiya": "fi", "Fransa": "fr", "Gana": "gh", "Güney Afrika": "za", "Güney Kore": "kr", "Gürcistan": "ge", "Hırvatistan": "hr", "Hindistan": "in", "Hollanda": "nl", "Irak": "iq", "İran": "ir", "İrlanda": "ie", "İspanya": "es", "İsrail": "il", "İsveç": "se", "İsviçre": "ch", "İtalya": "it", "İzlanda": "is", "Jamaika": "jm", "Japonya": "jp", "Kamboçya": "kh", "Kamerun": "cm", "Kanada": "ca", "Karadağ": "me", "Katar": "qa", "Kazakistan": "kz", "Kenya": "ke", "Kırgızistan": "kg", "Kolombiya": "co", "Kongo": "cd", "Kosta Rika": "cr", "Kuveyt": "kw", "Kuzey Kore": "kp", "Kuzey Makedonya": "mk", "Küba": "cu", "Letonya": "lv", "Libya": "ly", "Litvanya": "lt", "Lübnan": "lb", "Lüksemburg": "lu", "Macaristan": "hu", "Madagaskar": "mg", "Malezya": "my", "Mali": "ml", "Malta": "mt", "Meksika": "mx", "Mısır": "eg", "Moğolistan": "mn", "Moldova": "md", "Nepal": "np", "Nijerya": "ng", "Nikaragua": "ni", "Norveç": "no", "Özbekistan": "uz", "Pakistan": "pk", "Panama": "pa", "Paraguay": "py", "Peru": "pe", "Polonya": "pl", "Portekiz": "pt", "Romanya": "ro", "Ruanda": "rw", "Rusya": "ru", "Senegal": "sn", "Sırbistan": "rs", "Singapur": "sg", "Slovakya": "sk", "Slovenya": "si", "Somali": "so", "Sri Lanka": "lk", "Sudan": "sd", "Suriye": "sy", "Suudi Arabistan": "sa", "Şili": "cl", "Tacikistan": "tj", "Tanzanya": "tz", "Tayland": "th", "Tunus": "tn", "Türkiye": "tr", "Türkmenistan": "tm", "Uganda": "ug", "Ukrayna": "ua", "Umman": "om", "Uruguay": "uy", "Ürdün": "jo", "Vatikan": "va", "Venezuela": "ve", "Vietnam": "vn", "Yemen": "ye", "Yeni Zelanda": "nz", "Yunanistan": "gr", "Zambiya": "zm", "Zimbabve": "zw", "Afrikanca": "za", "Almanca": "de", "Amharca": "et", "Arapça": "sa", "Arnavutça": "al", "Assamca": "in", "Aymaraca": "bo", "Azerbaycan Türkçesi": "az", "Baskça": "es", "Başkurtça": "ru", "Belarusça": "by", "Bengalce": "bd", "Birmanca": "mm", "Boşnakça": "ba", "Bretonca": "fr", "Bulgarca": "bg", "Cava Dili": "id", "Çeçence": "ru", "Çekçe": "cz", "Çince": "cn", "Danca": "dk", "Dari": "af", "Endonezce": "id", "Ermenice": "am", "Estonca": "ee", "Farsça": "ir", "Felemenkçe": "nl", "Fince": "fi", "Fransızca": "fr", "Frizce": "nl", "Galce": "gb", "Galiçyaca": "es", "Güceratça": "in", "Gürcüce": "ge", "Haiti Kreyolu": "ht", "Hausa": "ng", "Hawaiice": "us", "Hırvatça": "hr", "Hintçe": "in", "İbranice": "il", "İgbo": "ng", "İngilizce": "gb", "İrlandaca": "ie", "İskoçça": "gb", "İspanyolca": "es", "İsveççe": "se", "İtalyanca": "it", "İzlandaca": "is", "Japonca": "jp", "Kamboçyaca": "kh", "Kannada": "in", "Katalanca": "es", "Kazakça": "kz", "Kırgızca": "kg", "Korece": "kr", "Korsikaca": "fr", "Kürtçe": "iq", "Laoca": "la", "Latince": "va", "Lehçe": "pl", "Letonca": "lv", "Litvanca": "lt", "Lüksemburgca": "lu", "Macarca": "hu", "Makedonca": "mk", "Malayca": "my", "Malayalam": "in", "Maltaca": "mt", "Maorice": "nz", "Marathi": "in", "Moğolca": "mn", "Nepalce": "np", "Norveççe": "no", "Osetçe": "ru", "Özbekçe": "uz", "Pencapça": "in", "Peştuca": "af", "Portekizce": "pt", "Romence": "ro", "Rusça": "ru", "Samoaca": "ws", "Sanskritçe": "in", "Sırpça": "rs", "Slovakça": "sk", "Slovence": "si", "Somalice": "so", "Sundaca": "id", "Svahili": "ke", "Tacikçe": "tj", "Tamilce": "in", "Tatarca": "ru", "Tayca": "th", "Teluguca": "in", "Türkçe": "tr", "Türkmence": "tm", "Ukraynaca": "ua", "Urduca": "pk", "Uygurca": "cn", "Vietnamca": "vn", "Yidiş": "il", "Yoruba": "ng", "Yunanca": "gr", "Zuluca": "za", "Sümerce": "iq" };
+        
+        function getFlag(name) { return flagMap[name] ? `<img src="https://flagcdn.com/24x18/${flagMap[name]}.png" class="country-flag" alt="${name}">` : ''; }
+
+        function populateYears() {
+            const yearSelect = document.getElementById('yearFilter');
+            const years = [...new Set(fetchedBooks.map(book => book.yearRead))].sort((a, b) => b - a);
+            yearSelect.innerHTML = `<option value="all">${i18n[currentLang].allYears}</option>`;
+            years.forEach(y => yearSelect.appendChild(new Option(y, y)));
+        }
+
+        function renderBooks(booksToRender) {
+            const bookListElement = document.getElementById('bookList');
+            bookListElement.innerHTML = ''; 
+            const totalSpan = document.getElementById('totalBooks');
+            if(totalSpan) totalSpan.textContent = booksToRender.length;
+            document.getElementById('noResultMessage').classList.toggle('d-none', booksToRender.length > 0);
+
+            const l = i18n[currentLang];
+            booksToRender.forEach(book => {
+                const item = document.createElement('div');
+                item.className = 'book-list-item';
+                let badgeColor = book.rating >= 8 ? 'bg-success' : (book.rating >= 5 ? 'bg-warning text-dark' : 'bg-danger');
+                let formatIcon = book.format === 'Basılı Kitap' ? 'bi-book' : book.format === 'E-Kitap' ? 'bi-tablet' : book.format === 'Sesli' ? 'bi-headphones' : 'bi-question-circle';
+
+                // Formatı çevirerek göster
+                let formatTranslation = book.format;
+                if(book.format === 'Basılı Kitap') formatTranslation = l.fmtPrint || "Basılı Kitap";
+                if(book.format === 'E-Kitap') formatTranslation = l.fmtEbook || "E-Kitap";
+                if(book.format === 'Sesli') formatTranslation = l.fmtAudio || "Sesli";
+                if(book.format === 'Bilinmeyen') formatTranslation = l.fmtUnknown || "Bilinmeyen";
+
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div><h3 class="book-title">${book.title}</h3><div class="book-author"><i class="bi bi-pen me-2"></i>${book.author}</div></div>
+                        <span class="badge ${badgeColor} rounded-pill rating-badge"><i class="bi bi-star-fill text-light me-1"></i> ${book.rating} / 10</span>
+                    </div>
+                    <div class="book-metadata">
+                        <div class="meta-item"><i class="bi bi-globe-europe-africa"></i><strong>${l.metaCountry}&nbsp;</strong> ${getFlag(book.country)} ${book.country}</div>
+                        <div class="meta-item"><i class="bi bi-translate"></i><strong>${l.metaLang}&nbsp;</strong> ${getFlag(book.originalLanguage)} ${book.originalLanguage}</div>
+                        <div class="meta-item"><i class="bi bi-file-earmark-text"></i><strong>${l.metaPages}&nbsp;</strong> ${book.pages}</div>
+                        <div class="meta-item"><i class="bi bi-calendar-check"></i><strong>${l.metaYear}&nbsp;</strong> ${book.yearRead}</div>
+                        <div class="meta-item"><i class="bi ${formatIcon}"></i><strong>${l.metaFormat}&nbsp;</strong> ${formatTranslation}</div>
+                    </div>
+                    <div class="review-box shadow-sm"><i class="bi bi-quote fs-4 me-2" style="color: var(--text-muted)"></i><span class="fst-italic">${book.review}</span></div>
+                `;
+                bookListElement.appendChild(item);
+            });
+        }
+
+        function filterBooks() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const ratingValue = document.getElementById('ratingFilter').value;
+            const yearValue = document.getElementById('yearFilter').value;
+            const filteredBooks = fetchedBooks.filter(b => {
+                const matchText = [b.title, b.author, b.country, b.originalLanguage, b.format].some(val => val && val.toLowerCase().includes(searchText));
+                return matchText && (ratingValue === 'all' || b.rating >= parseInt(ratingValue)) && (yearValue === 'all' || parseInt(b.yearRead) === parseInt(yearValue));
+            });
+            renderBooks(filteredBooks);
+        }
+
+        async function loadBooksFromJson() {
+            try {
+                const response = await fetch('kitaplar.json');
+                if (!response.ok) throw new Error('JSON dosyası okunamadı.');
+                fetchedBooks = await response.json();
+                fetchedBooks.sort((a, b) => b.yearRead - a.yearRead);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                applyLanguage(currentLang);
+                populateYears();
+                renderBooks(fetchedBooks);
+            } catch (error) { document.getElementById('loadingIndicator').innerHTML = '<p class="text-danger"><i class="bi bi-exclamation-circle me-1"></i> kitaplar.json dosyası bulunamadı.</p>'; }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filterBooks);
+        document.getElementById('ratingFilter').addEventListener('change', filterBooks);
+        document.getElementById('yearFilter').addEventListener('change', filterBooks);
+        document.addEventListener('DOMContentLoaded', loadBooksFromJson);
+    </script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kişisel Kütüphanem - Kitap Yönetimi</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const savedLang = localStorage.getItem('lang') || 'tr';
+        document.documentElement.lang = savedLang;
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #f4f6f9; --bg-card: #ffffff; --text-main: #2b3452; --text-muted: #6c757d; 
+            --border-color: #e9ecef; --input-bg: #ffffff; --title-color: #1e3c72; 
+            --navbar-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); --download-bg: #e8f4fd;
+        }
+        [data-theme="dark"] {
+            --bg-main: #121212; --bg-card: #1e1e1e; --text-main: #e0e0e0; --text-muted: #a0a0a0; 
+            --border-color: #333333; --input-bg: #2d2d2d; --title-color: #66b2ff; 
+            --navbar-bg: linear-gradient(135deg, #0f203c 0%, #15294b 100%); --download-bg: #15202b;
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-main); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+        .navbar { background: var(--navbar-bg); padding: 1rem 0; }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; letter-spacing: 0.5px; }
+        .nav-link { font-weight: 500; transition: color 0.3s; }
+        .admin-card { background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-color); transition: all 0.3s;}
+        .form-label { font-weight: 500; color: var(--text-main); }
+        .nav-pills .nav-link { color: var(--text-main); font-weight: 600; border-radius: 8px; padding: 0.8rem 1.5rem; transition: all 0.3s ease; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; color: #fff; }
+        .nav-pills .nav-link:hover:not(.active) { background-color: var(--border-color); }
+        .download-box { background-color: var(--download-bg); border: 2px dashed #0d6efd; border-radius: 12px; padding: 2rem; text-align: center; }
+        .form-control, .form-select { background-color: var(--input-bg); color: var(--text-main); border-color: var(--border-color); }
+        .form-control:focus, .form-select:focus { background-color: var(--input-bg); color: var(--text-main); }
+        .text-muted { color: var(--text-muted) !important; }
+        .page-title { color: var(--title-color); }
+        .bg-light { background-color: var(--bg-main) !important; } 
+        .country-flag { width: 20px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 6px; box-shadow: 0 0 3px rgba(0,0,0,0.2); vertical-align: middle; }
+        .nav-flag { width: 24px; height: 18px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow">
+        <div class="container">
+            <a class="navbar-brand" href="index.html" data-i18n="navBrand"><i class="bi bi-book-half me-2"></i>Kütüphanem</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-journal-text me-1"></i> <span data-i18n="navBooks">Okuduğum Kitaplar</span></a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="ekle.html"><i class="bi bi-gear me-1"></i> <span data-i18n="navManage">Kütüphane Yönetimi</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="istatistik.html"><i class="bi bi-bar-chart-line me-1"></i> <span data-i18n="navStats">İstatistikler</span></a></li>
+                    
+                    <li class="nav-item dropdown ms-lg-3 mt-2 mt-lg-0">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://flagcdn.com/24x18/tr.png" alt="Language" id="currentLangFlag" class="country-flag nav-flag m-0">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="langDropdown" style="min-width: 140px;">
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="tr"><img src="https://flagcdn.com/24x18/tr.png" class="country-flag"> Türkçe</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="en"><img src="https://flagcdn.com/24x18/gb.png" class="country-flag"> English</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="de"><img src="https://flagcdn.com/24x18/de.png" class="country-flag"> Deutsch</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="fr"><img src="https://flagcdn.com/24x18/fr.png" class="country-flag"> Français</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ar"><img src="https://flagcdn.com/24x18/sa.png" class="country-flag"> العربية</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ru"><img src="https://flagcdn.com/24x18/ru.png" class="country-flag"> Русский</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="zh"><img src="https://flagcdn.com/24x18/cn.png" class="country-flag"> 中文</a></li>
+                            <li><a class="dropdown-item lang-select d-flex align-items-center" href="#" data-lang="ko"><img src="https://flagcdn.com/24x18/kr.png" class="country-flag"> 한국어</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><button class="btn btn-outline-light rounded-pill px-3" id="themeToggle" title="Gece/Gündüz Modu"><i class="bi bi-moon-fill" id="themeIcon"></i></button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <h2 class="fw-bold text-center mb-4 page-title" data-i18n="pageTitle">Kitap Yönetim Paneli</h2>
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="admin-card">
+                    <ul class="nav nav-pills nav-fill mb-4 border-bottom pb-3" id="adminTabs" role="tablist">
+                        <li class="nav-item" role="presentation"><button class="nav-link active" id="add-tab" data-bs-toggle="pill" data-bs-target="#add-pane" type="button"><i class="bi bi-plus-circle me-2"></i><span data-i18n="tabAdd">Yeni Kitap Ekle</span></button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link" id="edit-tab" data-bs-toggle="pill" data-bs-target="#edit-pane" type="button"><i class="bi bi-pencil-square me-2"></i><span data-i18n="tabEdit">Kitap Düzenle / Sil</span></button></li>
+                    </ul>
+                    <div class="tab-content" id="adminTabsContent">
+                        <div class="tab-pane fade show active" id="add-pane" role="tabpanel">
+                            <h5 class="mb-4 text-primary"><i class="bi bi-journal-plus me-2"></i><span data-i18n="formTitleAdd">Kütüphaneye Yeni Bir Eser Kat</span></h5>
+                            <form id="addBookForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblTitle">Kitap Adı *</label><input type="text" class="form-control" id="titleAdd" required></div>
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblAuthor">Yazar *</label><input type="text" class="form-control" id="authorAdd" required></div>
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblCountry">Ülke *</label><select class="form-select" id="countryAdd" required><option value="" id="optCountryAdd">-- Ülke Seçiniz --</option></select></div>
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblLang">Orijinal Dil *</label><select class="form-select" id="languageAdd" required><option value="" id="optLangAdd">-- Dil Seçiniz --</option></select></div>
+                                    <div class="col-md-4"><label class="form-label" data-i18n="lblPages">Sayfa Sayısı *</label><input type="number" class="form-control" id="pagesAdd" required></div>
+                                    <div class="col-md-4"><label class="form-label" data-i18n="lblYear">Okunma Yılı *</label><input type="number" class="form-control" id="yearReadAdd" value="2026" required></div>
+                                    <div class="col-md-4"><label class="form-label" data-i18n="lblFormat">Format *</label>
+                                        <select class="form-select" id="formatAdd" required>
+                                            <option value="Basılı Kitap" class="fmtPrint">Basılı Kitap</option>
+                                            <option value="E-Kitap" class="fmtEbook">E-Kitap</option>
+                                            <option value="Sesli" class="fmtAudio">Sesli</option>
+                                            <option value="Bilinmeyen" class="fmtUnknown">Bilinmeyen</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12"><label class="form-label" data-i18n="lblRating">Puan (1-10) *</label><input type="range" class="form-range" id="ratingAdd" min="1" max="10" step="1" value="8" oninput="document.getElementById('ratingValueAdd').innerText = this.value"><div class="text-center fw-bold text-primary fs-5"><span id="ratingValueAdd">8</span> / 10</div></div>
+                                    <div class="col-12"><label class="form-label" data-i18n="lblReview">İnceleme / Düşünceler *</label><textarea class="form-control" id="reviewAdd" rows="3" required></textarea></div>
+                                    <div class="col-12 mt-4"><button type="submit" class="btn btn-primary w-100 py-2 fw-bold"><i class="bi bi-save me-2"></i><span data-i18n="btnAdd">Listeye Ekle</span></button></div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="edit-pane" role="tabpanel">
+                            <div class="mb-4">
+                                <label class="form-label text-warning-emphasis"><i class="bi bi-search me-2"></i><span data-i18n="formTitleEdit">Düzenlemek İstediğiniz Kitabı Seçin</span></label>
+                                <select id="editSelect" class="form-select form-select-lg"><option value="" id="optSelectBook">-- Listeden bir kitap seçiniz --</option></select>
+                            </div>
+                            <form id="editBookForm" style="display: none;">
+                                <input type="hidden" id="bookIdEdit">
+                                <div class="row g-3 p-3 bg-light rounded border">
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblTitle">Kitap Adı</label><input type="text" class="form-control" id="titleEdit" required></div>
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblAuthor">Yazar</label><input type="text" class="form-control" id="authorEdit" required></div>
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblCountry">Ülke</label><select class="form-select" id="countryEdit" required><option value="" id="optCountryEdit">-- Ülke Seçiniz --</option></select></div>
+                                    <div class="col-md-6"><label class="form-label" data-i18n="lblLang">Orijinal Dil</label><select class="form-select" id="languageEdit" required><option value="" id="optLangEdit">-- Dil Seçiniz --</option></select></div>
+                                    <div class="col-md-4"><label class="form-label" data-i18n="lblPages">Sayfa Sayısı</label><input type="number" class="form-control" id="pagesEdit" required></div>
+                                    <div class="col-md-4"><label class="form-label" data-i18n="lblYear">Okunma Yılı</label><input type="number" class="form-control" id="yearReadEdit" required></div>
+                                    <div class="col-md-4"><label class="form-label" data-i18n="lblFormat">Format</label>
+                                        <select class="form-select" id="formatEdit" required>
+                                            <option value="Basılı Kitap" class="fmtPrint">Basılı Kitap</option>
+                                            <option value="E-Kitap" class="fmtEbook">E-Kitap</option>
+                                            <option value="Sesli" class="fmtAudio">Sesli</option>
+                                            <option value="Bilinmeyen" class="fmtUnknown">Bilinmeyen</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12"><label class="form-label" data-i18n="lblRating">Puan (1-10)</label><input type="range" class="form-range" id="ratingEdit" min="1" max="10" step="1" oninput="document.getElementById('ratingValueEdit').innerText = this.value"><div class="text-center fw-bold text-primary fs-5"><span id="ratingValueEdit">8</span> / 10</div></div>
+                                    <div class="col-12"><label class="form-label" data-i18n="lblReview">İnceleme / Düşünceler</label><textarea class="form-control" id="reviewEdit" rows="3" required></textarea></div>
+                                    <div class="col-12 mt-3 d-flex gap-2">
+                                        <button type="submit" class="btn btn-warning flex-grow-1 fw-bold"><i class="bi bi-arrow-repeat me-2"></i><span data-i18n="btnUpdate">Güncelle</span></button>
+                                        <button type="button" class="btn btn-outline-danger" id="btnDelete"><i class="bi bi-trash"></i> <span data-i18n="btnDelete">Sil</span></button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="admin-card" style="position: sticky; top: 2rem;">
+                    <h5 class="mb-3 text-primary text-center"><i class="bi bi-cloud-arrow-down me-2"></i><span data-i18n="downTitle">Güncel Veritabanı</span></h5>
+                    <p class="text-muted small text-center" data-i18n="downDesc">İşleminizi tamamladıktan sonra aşağıdaki butona basarak güncel kitaplar listenizi indirin.</p>
+                    <div class="download-box my-4"><i class="bi bi-filetype-json text-primary" style="font-size: 4rem;"></i><h6 class="mt-3 mb-1" style="color: var(--text-main)">kitaplar.json</h6><small class="text-muted" id="bookCountText" data-i18n="waitData">Listede veri bekleniyor...</small></div>
+                    <button class="btn btn-primary w-100 py-3 fw-bold fs-5 shadow-sm" id="btnDownload"><i class="bi bi-download me-2"></i><span data-i18n="btnDown">Güncel Dosyayı İndir</span></button>
+                    <div id="actionAlert" class="alert mt-3 py-2 d-none text-center fw-bold" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const i18n = {
+            tr: { navBrand: "<i class='bi bi-book-half me-2'></i>Kütüphanem", navBooks: "Okuduğum Kitaplar", navManage: "Kütüphane Yönetimi", navStats: "İstatistikler", pageTitle: "Kitap Yönetim Paneli", tabAdd: "Yeni Kitap Ekle", tabEdit: "Kitap Düzenle / Sil", formTitleAdd: "Kütüphaneye Yeni Bir Eser Kat", lblTitle: "Kitap Adı *", lblAuthor: "Yazar *", lblCountry: "Ülke *", lblLang: "Orijinal Dil *", lblPages: "Sayfa Sayısı *", lblYear: "Okunma Yılı *", lblFormat: "Format *", lblRating: "Puan (1-10) *", lblReview: "İnceleme / Düşünceler *", btnAdd: "Listeye Ekle", formTitleEdit: "Düzenlemek İstediğiniz Kitabı Seçin", optSelectBook: "-- Listeden bir kitap seçiniz --", optCountry: "-- Ülke Seçiniz --", optLang: "-- Dil Seçiniz --", btnUpdate: "Güncelle", btnDelete: "Sil", downTitle: "Güncel Veritabanı", downDesc: "İşleminizi tamamladıktan sonra butona basarak güncel listenizi indirin.", btnDown: "Güncel Dosyayı İndir", waitData: "Listede veri bekleniyor...", fmtPrint: "Basılı Kitap", fmtEbook: "E-Kitap", fmtAudio: "Sesli", fmtUnknown: "Bilinmeyen", msgAdd: "Kitap listeye eklendi! Kaydetmek için dosyayı indirmeyi unutmayın.", msgUpdate: "Kitap güncellendi! Değişiklikler için dosyayı indirin.", msgDelete: "Kitap silindi! Listeyi güncellemek için dosyayı indirin.", msgErr: "İndirilecek kitap bulunamadı!", msgCount: "Şu an listede X kitap var." },
+            en: { navBrand: "<i class='bi bi-book-half me-2'></i>My Library", navBooks: "Read Books", navManage: "Library Management", navStats: "Statistics", pageTitle: "Book Management Panel", tabAdd: "Add New Book", tabEdit: "Edit / Delete Book", formTitleAdd: "Add a New Work to Your Library", lblTitle: "Book Title *", lblAuthor: "Author *", lblCountry: "Country *", lblLang: "Original Lang *", lblPages: "Pages *", lblYear: "Year Read *", lblFormat: "Format *", lblRating: "Rating (1-10) *", lblReview: "Review / Thoughts *", btnAdd: "Add to List", formTitleEdit: "Select the Book to Edit", optSelectBook: "-- Select a book from list --", optCountry: "-- Select Country --", optLang: "-- Select Language --", btnUpdate: "Update", btnDelete: "Delete", downTitle: "Current Database", downDesc: "Click the button below to download your updated book list.", btnDown: "Download Current File", waitData: "Waiting for data...", fmtPrint: "Print Book", fmtEbook: "E-Book", fmtAudio: "Audiobook", fmtUnknown: "Unknown", msgAdd: "Book added to the list! Download the file to save.", msgUpdate: "Book updated! Download the file for changes.", msgDelete: "Book deleted! Download the file to update.", msgErr: "No books found to download!", msgCount: "There are currently X books in the list." },
+            de: { navBrand: "<i class='bi bi-book-half me-2'></i>Meine Bibliothek", navBooks: "Gelesene Bücher", navManage: "Bibliotheksverwaltung", navStats: "Statistiken", pageTitle: "Buchverwaltungsfenster", tabAdd: "Neues Buch", tabEdit: "Buch bearbeiten / löschen", formTitleAdd: "Fügen Sie Ihrer Bibliothek ein neues Werk hinzu", lblTitle: "Buchtitel *", lblAuthor: "Autor *", lblCountry: "Land *", lblLang: "Sprache *", lblPages: "Seiten *", lblYear: "Lesejahr *", lblFormat: "Format *", lblRating: "Bewertung (1-10) *", lblReview: "Rezension / Gedanken *", btnAdd: "Zur Liste hinzufügen", formTitleEdit: "Wählen Sie das Buch", optSelectBook: "-- Buch wählen --", optCountry: "-- Land auswählen --", optLang: "-- Sprache wählen --", btnUpdate: "Aktualisieren", btnDelete: "Löschen", downTitle: "Aktuelle Datenbank", downDesc: "Klicken Sie unten, um die aktualisierte Liste herunterzuladen.", btnDown: "Datei herunterladen", waitData: "Warten auf Daten...", fmtPrint: "Gedrucktes Buch", fmtEbook: "E-Book", fmtAudio: "Hörbuch", fmtUnknown: "Unbekannt", msgAdd: "Buch hinzugefügt! Datei herunterladen, um zu speichern.", msgUpdate: "Buch aktualisiert! Datei herunterladen.", msgDelete: "Buch gelöscht! Datei herunterladen.", msgErr: "Keine Bücher gefunden!", msgCount: "Derzeit X Bücher in der Liste." },
+            fr: { navBrand: "<i class='bi bi-book-half me-2'></i>Ma Bibliothèque", navBooks: "Livres Lus", navManage: "Gestion", navStats: "Statistiques", pageTitle: "Panneau de Gestion", tabAdd: "Nouveau Livre", tabEdit: "Modifier/Supprimer", formTitleAdd: "Ajouter un Livre", lblTitle: "Titre *", lblAuthor: "Auteur *", lblCountry: "Pays *", lblLang: "Langue *", lblPages: "Pages *", lblYear: "Année *", lblFormat: "Format *", lblRating: "Note (1-10) *", lblReview: "Avis *", btnAdd: "Ajouter", formTitleEdit: "Sélectionner un Livre", optSelectBook: "-- Sélectionner --", optCountry: "-- Pays --", optLang: "-- Langue --", btnUpdate: "Mettre à jour", btnDelete: "Supprimer", downTitle: "Base de Données", downDesc: "Télécharger la liste mise à jour.", btnDown: "Télécharger le Fichier", waitData: "En attente...", fmtPrint: "Livre Imprimé", fmtEbook: "E-Book", fmtAudio: "Livre Audio", fmtUnknown: "Inconnu", msgAdd: "Ajouté! Téléchargez le fichier.", msgUpdate: "Mis à jour! Téléchargez le fichier.", msgDelete: "Supprimé! Téléchargez le fichier.", msgErr: "Aucun livre!", msgCount: "Il y a X livres dans la liste." },
+            ar: { navBrand: "<i class='bi bi-book-half me-2'></i>مكتبتي", navBooks: "الكتب المقروءة", navManage: "إدارة المكتبة", navStats: "إحصائيات", pageTitle: "لوحة إدارة الكتب", tabAdd: "إضافة كتاب", tabEdit: "تعديل/حذف", formTitleAdd: "إضافة كتاب جديد", lblTitle: "العنوان *", lblAuthor: "المؤلف *", lblCountry: "الدولة *", lblLang: "اللغة *", lblPages: "الصفحات *", lblYear: "السنة *", lblFormat: "التنسيق *", lblRating: "التقييم (1-10) *", lblReview: "مراجعة *", btnAdd: "إضافة للقائمة", formTitleEdit: "اختر كتاباً للتعديل", optSelectBook: "-- اختر كتاب --", optCountry: "-- اختر الدولة --", optLang: "-- اختر اللغة --", btnUpdate: "تحديث", btnDelete: "حذف", downTitle: "قاعدة البيانات", downDesc: "قم بتحميل القائمة المحدثة.", btnDown: "تحميل الملف", waitData: "في الانتظار...", fmtPrint: "كتاب مطبوع", fmtEbook: "كتاب إلكتروني", fmtAudio: "كتاب صوتي", fmtUnknown: "غير معروف", msgAdd: "تمت الإضافة! قم بتحميل الملف.", msgUpdate: "تم التحديث! قم بتحميل الملف.", msgDelete: "تم الحذف! قم بتحميل الملف.", msgErr: "لا توجد كتب!", msgCount: "يوجد حالياً X كتب في القائمة." },
+            ru: { navBrand: "<i class='bi bi-book-half me-2'></i>Библиотека", navBooks: "Прочитанные", navManage: "Управление", navStats: "Статистика", pageTitle: "Управление Книгами", tabAdd: "Новая книга", tabEdit: "Изменить/Удалить", formTitleAdd: "Добавить книгу", lblTitle: "Название *", lblAuthor: "Автор *", lblCountry: "Страна *", lblLang: "Язык *", lblPages: "Страницы *", lblYear: "Год *", lblFormat: "Формат *", lblRating: "Оценка (1-10) *", lblReview: "Отзыв *", btnAdd: "Добавить", formTitleEdit: "Выберите книгу", optSelectBook: "-- Выбрать --", optCountry: "-- Страна --", optLang: "-- Язык --", btnUpdate: "Обновить", btnDelete: "Удалить", downTitle: "База Данных", downDesc: "Скачать обновленный список.", btnDown: "Скачать файл", waitData: "Ожидание...", fmtPrint: "Печатная", fmtEbook: "Электронная", fmtAudio: "Аудиокнига", fmtUnknown: "Неизвестно", msgAdd: "Добавлено! Скачайте файл.", msgUpdate: "Обновлено! Скачайте файл.", msgDelete: "Удалено! Скачайте файл.", msgErr: "Нет книг для скачивания!", msgCount: "В списке сейчас X книг." },
+            zh: { navBrand: "<i class='bi bi-book-half me-2'></i>我的图书馆", navBooks: "已读图书", navManage: "管理", navStats: "统计", pageTitle: "图书管理面板", tabAdd: "添加新书", tabEdit: "编辑/删除", formTitleAdd: "添加新书", lblTitle: "书名 *", lblAuthor: "作者 *", lblCountry: "国家 *", lblLang: "语言 *", lblPages: "页数 *", lblYear: "阅读年份 *", lblFormat: "格式 *", lblRating: "评分 (1-10) *", lblReview: "评论 *", btnAdd: "添加到列表", formTitleEdit: "选择要编辑的图书", optSelectBook: "-- 选择图书 --", optCountry: "-- 选择国家 --", optLang: "-- 选择语言 --", btnUpdate: "更新", btnDelete: "删除", downTitle: "最新数据库", downDesc: "点击下载更新后的列表。", btnDown: "下载文件", waitData: "等待数据...", fmtPrint: "纸质书", fmtEbook: "电子书", fmtAudio: "有声书", fmtUnknown: "未知", msgAdd: "已添加！请下载文件以保存。", msgUpdate: "已更新！请下载文件。", msgDelete: "已删除！请下载文件。", msgErr: "未找到图书！", msgCount: "目前列表中有 X 本书。" },
+            ko: { navBrand: "<i class='bi bi-book-half me-2'></i>내 도서관", navBooks: "읽은 책", navManage: "도서관 관리", navStats: "통계", pageTitle: "도서 관리 패널", tabAdd: "새 책 추가", tabEdit: "도서 수정/삭제", formTitleAdd: "도서 추가", lblTitle: "제목 *", lblAuthor: "저자 *", lblCountry: "국가 *", lblLang: "언어 *", lblPages: "페이지 *", lblYear: "읽은 연도 *", lblFormat: "형식 *", lblRating: "평점 (1-10) *", lblReview: "리뷰 *", btnAdd: "목록에 추가", formTitleEdit: "편집할 도서 선택", optSelectBook: "-- 도서 선택 --", optCountry: "-- 국가 선택 --", optLang: "-- 언어 선택 --", btnUpdate: "업데이트", btnDelete: "삭제", downTitle: "데이터베이스", downDesc: "업데이트된 목록 다운로드.", btnDown: "파일 다운로드", waitData: "데이터 대기 중...", fmtPrint: "종이책", fmtEbook: "전자책", fmtAudio: "오디오북", fmtUnknown: "알 수 없음", msgAdd: "추가됨! 파일을 다운로드하여 저장하세요.", msgUpdate: "업데이트됨! 파일을 다운로드하세요.", msgDelete: "삭제됨! 파일을 다운로드하세요.", msgErr: "다운로드할 책이 없습니다!", msgCount: "현재 목록에 X 권의 책이 있습니다." }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'tr';
+
+        function applyLanguage(lang) {
+            document.documentElement.lang = lang;
+            document.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) el.innerHTML = i18n[lang][key];
+            });
+
+            document.getElementById('optCountryAdd').textContent = i18n[lang].optCountry;
+            document.getElementById('optCountryEdit').textContent = i18n[lang].optCountry;
+            document.getElementById('optLangAdd').textContent = i18n[lang].optLang;
+            document.getElementById('optLangEdit').textContent = i18n[lang].optLang;
+            document.getElementById('optSelectBook').textContent = i18n[lang].optSelectBook;
+
+            document.querySelectorAll('.fmtPrint').forEach(el => el.textContent = i18n[lang].fmtPrint);
+            document.querySelectorAll('.fmtEbook').forEach(el => el.textContent = i18n[lang].fmtEbook);
+            document.querySelectorAll('.fmtAudio').forEach(el => el.textContent = i18n[lang].fmtAudio);
+            document.querySelectorAll('.fmtUnknown').forEach(el => el.textContent = i18n[lang].fmtUnknown);
+
+            const flags = { 'tr': 'tr', 'en': 'gb', 'de': 'de', 'fr': 'fr', 'ar': 'sa', 'ru': 'ru', 'zh': 'cn', 'ko': 'kr' };
+            document.getElementById('currentLangFlag').src = `https://flagcdn.com/24x18/${flags[lang]}.png`;
+            updateBookCountUI();
+        }
+
+        document.querySelectorAll('.lang-select').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault(); currentLang = e.currentTarget.getAttribute('data-lang');
+                localStorage.setItem('lang', currentLang); applyLanguage(currentLang);
+            });
+        });
+
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        function updateIcon() { themeIcon.className = document.documentElement.getAttribute('data-theme') === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill'; }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', () => {
+            let newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); updateIcon();
+        });
+
+        let booksData = [];
+        const countries = ["Afganistan", "Almanya", "Amerika Birleşik Devletleri", "Andorra", "Angola", "Arjantin", "Arnavutluk", "Avustralya", "Avusturya", "Azerbaycan", "Bahreyn", "Bangladeş", "Belçika", "Beyaz Rusya", "Birleşik Arap Emirlikleri", "Birleşik Krallık", "Bolivya", "Bosna-Hersek", "Brezilya", "Bulgaristan", "Cezayir", "Çad", "Çekya", "Çin", "Danimarka", "Dominik Cumhuriyeti", "Ekvador", "El Salvador", "Endonezya", "Ermenistan", "Estonya", "Etiyopya", "Fas", "Fildişi Sahili", "Filipinler", "Filistin", "Finlandiya", "Fransa", "Gana", "Güney Afrika", "Güney Kore", "Gürcistan", "Hırvatistan", "Hindistan", "Hollanda", "Irak", "İran", "İrlanda", "İspanya", "İsrail", "İsveç", "İsviçre", "İtalya", "İzlanda", "Jamaika", "Japonya", "Kamboçya", "Kamerun", "Kanada", "Karadağ", "Katar", "Kazakistan", "Kenya", "Kırgızistan", "Kolombiya", "Kongo", "Kosta Rika", "Kuveyt", "Kuzey Kore", "Kuzey Makedonya", "Küba", "Letonya", "Libya", "Litvanya", "Lübnan", "Lüksemburg", "Macaristan", "Madagaskar", "Malezya", "Mali", "Malta", "Meksika", "Mısır", "Moğolistan", "Moldova", "Nepal", "Nijerya", "Nikaragua", "Norveç", "Özbekistan", "Pakistan", "Panama", "Paraguay", "Peru", "Polonya", "Portekiz", "Romanya", "Ruanda", "Rusya", "Senegal", "Sırbistan", "Singapur", "Slovakya", "Slovenya", "Somali", "Sri Lanka", "Sudan", "Suriye", "Suudi Arabistan", "Şili", "Tacikistan", "Tanzanya", "Tayland", "Tunus", "Türkiye", "Türkmenistan", "Uganda", "Ukrayna", "Umman", "Uruguay", "Ürdün", "Vatikan", "Venezuela", "Vietnam", "Yemen", "Yeni Zelanda", "Yunanistan", "Zambiya", "Zimbabve"];
+        const languages = ["Afrikanca", "Almanca", "Amharca", "Arapça", "Arnavutça", "Assamca", "Aymaraca", "Azerbaycan Türkçesi", "Baskça", "Başkurtça", "Belarusça", "Bengalce", "Birmanca", "Boşnakça", "Bretonca", "Bulgarca", "Cava Dili", "Çeçence", "Çekçe", "Çince", "Danca", "Dari", "Endonezce", "Ermenice", "Esperanto", "Estonca", "Farsça", "Felemenkçe", "Fince", "Fransızca", "Frizce", "Galce", "Galiçyaca", "Güceratça", "Gürcüce", "Haiti Kreyolu", "Hausa", "Hawaiice", "Hırvatça", "Hintçe", "Hmong", "İbranice", "İgbo", "İngilizce", "İrlandaca", "İskoçça", "İspanyolca", "İsveççe", "İtalyanca", "İzlandaca", "Japonca", "Kamboçyaca", "Kannada", "Katalanca", "Kazakça", "Kırgızca", "Korece", "Korsikaca", "Kürtçe", "Laoca", "Latince", "Lehçe", "Letonca", "Litvanca", "Lüksemburgca", "Macarca", "Makedonca", "Malayca", "Malayalam", "Maltaca", "Maorice", "Marathi", "Moğolca", "Nepalce", "Norveççe", "Osetçe", "Özbekçe", "Pencapça", "Peştuca", "Portekizce", "Romence", "Rusça", "Samoaca", "Sanskritçe", "Sırpça", "Sintçe", "Slovakça", "Slovence", "Somalice", "Sundaca", "Svahili", "Tacikçe", "Tamilce", "Tatarca", "Tayca", "Teluguca", "Tibetçe", "Türkçe", "Türkmence", "Ukraynaca", "Urduca", "Uygurca", "Vietnamca", "Yidiş", "Yoruba", "Yunanca", "Zuluca", "Sümerce"];
+
+        function populateDropdowns() {
+            countries.sort((a, b) => a.localeCompare(b, 'tr'));
+            languages.sort((a, b) => a.localeCompare(b, 'tr'));
+            const cAdd = document.getElementById('countryAdd'), cEdit = document.getElementById('countryEdit');
+            countries.forEach(c => { cAdd.add(new Option(c, c)); cEdit.add(new Option(c, c)); });
+            const lAdd = document.getElementById('languageAdd'), lEdit = document.getElementById('languageEdit');
+            languages.forEach(l => { lAdd.add(new Option(l, l)); lEdit.add(new Option(l, l)); });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            populateDropdowns(); 
+            applyLanguage(currentLang);
+            try {
+                const response = await fetch('kitaplar.json');
+                if (response.ok) { booksData = await response.json(); populateEditSelect(); updateBookCountUI(); }
+            } catch (error) { console.error("JSON okunamadı:", error); }
+        });
+
+        function populateEditSelect() {
+            const select = document.getElementById('editSelect');
+            select.innerHTML = `<option value="" id="optSelectBook">${i18n[currentLang].optSelectBook}</option>`;
+            [...booksData].sort((a,b) => a.title.localeCompare(b.title)).forEach(book => select.appendChild(new Option(`${book.title} - ${book.author}`, book.id)));
+            document.getElementById('editBookForm').style.display = 'none';
+        }
+
+        function updateBookCountUI() { 
+            if(booksData.length > 0) {
+                document.getElementById('bookCountText').innerText = i18n[currentLang].msgCount.replace('X', booksData.length);
+            }
+        }
+
+        document.getElementById('editSelect').addEventListener('change', function() {
+            const form = document.getElementById('editBookForm');
+            if (this.value) {
+                const book = booksData.find(b => b.id == this.value);
+                if (book) {
+                    document.getElementById('bookIdEdit').value = book.id; document.getElementById('titleEdit').value = book.title; document.getElementById('authorEdit').value = book.author;
+                    const cSelect = document.getElementById('countryEdit'), lSelect = document.getElementById('languageEdit');
+                    if(![...cSelect.options].map(o => o.value).includes(book.country)) cSelect.add(new Option(book.country, book.country));
+                    if(![...lSelect.options].map(o => o.value).includes(book.originalLanguage)) lSelect.add(new Option(book.originalLanguage, book.originalLanguage));
+                    cSelect.value = book.country; lSelect.value = book.originalLanguage;
+                    document.getElementById('pagesEdit').value = book.pages; document.getElementById('yearReadEdit').value = book.yearRead; document.getElementById('formatEdit').value = book.format; document.getElementById('ratingEdit').value = book.rating; document.getElementById('ratingValueEdit').innerText = book.rating; document.getElementById('reviewEdit').value = book.review;
+                    form.style.display = 'block'; 
+                }
+            } else { form.style.display = 'none'; }
+        });
+
+        document.getElementById('addBookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            booksData.push({
+                id: booksData.length > 0 ? Math.max(...booksData.map(b => b.id)) + 1 : 1,
+                title: document.getElementById('titleAdd').value.trim(), author: document.getElementById('authorAdd').value.trim(),
+                originalLanguage: document.getElementById('languageAdd').value, country: document.getElementById('countryAdd').value,
+                pages: parseInt(document.getElementById('pagesAdd').value), yearRead: parseInt(document.getElementById('yearReadAdd').value),
+                format: document.getElementById('formatAdd').value, review: document.getElementById('reviewAdd').value.trim(), rating: parseInt(document.getElementById('ratingAdd').value)
+            });
+            populateEditSelect(); updateBookCountUI(); this.reset(); document.getElementById('ratingValueAdd').innerText = "8";
+            showAlert(i18n[currentLang].msgAdd, "alert-success");
+        });
+
+        document.getElementById('editBookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('bookIdEdit').value, index = booksData.findIndex(b => b.id == id);
+            if (index !== -1) {
+                booksData[index] = {
+                    id: parseInt(id), title: document.getElementById('titleEdit').value.trim(), author: document.getElementById('authorEdit').value.trim(),
+                    originalLanguage: document.getElementById('languageEdit').value, country: document.getElementById('countryEdit').value,
+                    pages: parseInt(document.getElementById('pagesEdit').value), yearRead: parseInt(document.getElementById('yearReadEdit').value),
+                    format: document.getElementById('formatEdit').value, review: document.getElementById('reviewEdit').value.trim(), rating: parseInt(document.getElementById('ratingEdit').value)
+                };
+                populateEditSelect(); showAlert(i18n[currentLang].msgUpdate, "alert-warning");
+            }
+        });
+
+        document.getElementById('btnDelete').addEventListener('click', function() {
+            if (document.getElementById('bookIdEdit').value && confirm('Emin misiniz? / Are you sure?')) {
+                booksData = booksData.filter(b => b.id != document.getElementById('bookIdEdit').value);
+                populateEditSelect(); updateBookCountUI(); showAlert(i18n[currentLang].msgDelete, "alert-danger");
+            }
+        });
+
+        function showAlert(msg, cls) {
+            const box = document.getElementById('actionAlert'), btn = document.getElementById('btnDownload');
+            box.className = `alert mt-3 py-2 ${cls}`; box.innerHTML = `<i class="bi bi-info-circle-fill me-2"></i> ${msg}`;
+            btn.classList.add('btn-lg', 'shadow'); btn.classList.replace('btn-primary', 'btn-success');
+            setTimeout(() => { btn.classList.remove('btn-lg', 'shadow'); btn.classList.replace('btn-success', 'btn-primary'); }, 800);
+            setTimeout(() => { box.className = "alert mt-3 py-2 d-none text-center fw-bold"; }, 4000);
+        }
+
+        document.getElementById('btnDownload').addEventListener('click', function() {
+            if(booksData.length === 0) return alert(i18n[currentLang].msgErr);
+            const url = URL.createObjectURL(new Blob([JSON.stringify(booksData, null, 2)], { type: "application/json" }));
+            const a = document.createElement('a'); a.href = url; a.download = 'kitaplar.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
