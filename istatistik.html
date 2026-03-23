@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -111,6 +113,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // ==========================================
+        // 1. SUPABASE BAĞLANTI AYARLARI (BURAYI GÜNCELLEYİN)
+        // ==========================================
+        const SUPABASE_URL = 'https://yloawimcrysmmnxlhwuv.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlsb2F3aW1jcnlzbW1ueGxod3V2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODY2MDksImV4cCI6MjA4OTg2MjYwOX0.VaVXSIpOEQtGvXxnBa77hI1kjNW_fr8eMhRSf_pq-4I';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ==========================================
+
         const i18n = {
             tr: { navBrand: "<i class='bi bi-book-half me-2'></i>Kütüphanem", navBooks: "Okuduğum Kitaplar", navManage: "Kütüphane Yönetimi", navStats: "İstatistikler", pageTitle: "Kapsamlı İstatistikler", statTotalBooks: "Toplam Kitap", statTotalPages: "Okunan Sayfa", statAuthors: "Farklı Yazar", statAvgRating: "Ortalama Puan", chartMap: "Edebiyat Haritası - Okunan Ülkeler", chartYearsBooks: "Yıllara Göre Okunan Kitap", chartYearsPages: "Yıllara Göre Sayfa Sayısı", chartAuthors: "En Çok Okunan 5 Yazar", chartRatings: "Puanlama Dağılımı", chartFormat: "Format Dağılımı", chartCountry: "Ülke Dağılımı", chartLang: "Orijinal Dil Dağılımı", lblCountry: "Ülke", lblBooksRead: "Okunan Kitap", lblPagesRead: "Okunan Sayfa", lblBookCount: "Kitap Sayısı", lblOther: "Diğer", lblRatingSuffix: "Puan", lblBookWord: "kitap", fmtPrint: "Basılı Kitap", fmtEbook: "E-Kitap", fmtAudio: "Sesli", fmtUnknown: "Bilinmeyen" },
             en: { navBrand: "<i class='bi bi-book-half me-2'></i>My Library", navBooks: "Read Books", navManage: "Library Management", navStats: "Statistics", pageTitle: "Comprehensive Statistics", statTotalBooks: "Total Books", statTotalPages: "Pages Read", statAuthors: "Different Authors", statAvgRating: "Average Rating", chartMap: "Literature Map - Countries", chartYearsBooks: "Books Read by Year", chartYearsPages: "Pages Read by Year", chartAuthors: "Top 5 Most Read Authors", chartRatings: "Rating Distribution", chartFormat: "Format Distribution", chartCountry: "Country Distribution", chartLang: "Language Distribution", lblCountry: "Country", lblBooksRead: "Books Read", lblPagesRead: "Pages Read", lblBookCount: "Book Count", lblOther: "Other", lblRatingSuffix: "Stars", lblBookWord: "books", fmtPrint: "Print Book", fmtEbook: "E-Book", fmtAudio: "Audiobook", fmtUnknown: "Unknown" },
@@ -179,16 +189,18 @@
 
         async function loadStatistics() {
             try {
-                const response = await fetch('kitaplar.json');
-                if (!response.ok) throw new Error('JSON okunamadı.');
-                globalBooksData = await response.json();
+                const { data, error } = await supabaseClient.from('kitaplar').select('*');
+                if (error) throw error;
+                globalBooksData = data || [];
 
                 calculateSummaryStats(globalBooksData);
                 applyLanguage(currentLang);
 
                 google.charts.load('current', {'packages':['geochart'], 'language': currentLang});
                 google.charts.setOnLoadCallback(() => drawWorldMap(globalBooksData));
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                console.error("Supabase Hatası:", error); 
+            }
         }
 
         function drawWorldMap(books) {
@@ -220,7 +232,13 @@
             document.getElementById('statTotalBooks').textContent = totalBooks;
             document.getElementById('statTotalPages').textContent = books.reduce((sum, b) => sum + (b.pages || 0), 0).toLocaleString('tr-TR');
             document.getElementById('statTotalAuthors').textContent = new Set(books.map(b => b.author)).size;
-            document.getElementById('statAvgRating').textContent = totalBooks > 0 ? (books.reduce((sum, b) => sum + (b.rating || 0), 0) / totalBooks).toFixed(1) : 0;
+            
+            const totalRating = books.reduce((sum, b) => {
+                let r = parseFloat((b.rating || "0").toString().replace(',', '.'));
+                return sum + (isNaN(r) ? 0 : r);
+            }, 0);
+            
+            document.getElementById('statAvgRating').textContent = totalBooks > 0 ? (totalRating / totalBooks).toFixed(1) : "0.0";
         }
 
         function drawCharts(books) {
@@ -237,8 +255,8 @@
             const barChartOptions = { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: {color: textColor}, grid: {color: gridColor} }, y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: {color: gridColor} } } };
             const horizontalBarOptions = { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: {color: gridColor} }, y: { ticks: {color: textColor}, grid: {color: gridColor} } } };
 
-            const yearCounts = countBy(books, 'yearRead');
-            const pagesPerYear = books.reduce((acc, book) => { if (book.yearRead) acc[book.yearRead] = (acc[book.yearRead] || 0) + book.pages; return acc; }, {});
+            const yearCounts = countBy(books, 'yearread');
+            const pagesPerYear = books.reduce((acc, book) => { if (book.yearread) acc[book.yearread] = (acc[book.yearread] || 0) + book.pages; return acc; }, {});
             const sortedYears = Object.keys(yearCounts).sort();
 
             chartInstances.push(new Chart(document.getElementById('yearsChart'), { type: 'bar', data: { labels: sortedYears, datasets: [{ label: l.lblBooksRead, data: sortedYears.map(y => yearCounts[y]), backgroundColor: '#0d6efd', borderRadius: 4 }] }, options: barChartOptions }));
@@ -249,12 +267,37 @@
             chartInstances.push(new Chart(document.getElementById('authorChart'), { type: 'bar', data: { labels: sortedAuthors.map(a => a[0]), datasets: [{ label: l.lblBookCount, data: sortedAuthors.map(a => a[1]), backgroundColor: '#0dcaf0', borderRadius: 4 }] }, options: horizontalBarOptions }));
 
             const ratingCounts = countBy(books, 'rating');
-            const ratingLabels = Object.keys(ratingCounts).sort((a,b) => a-b);
+            const ratingLabels = Object.keys(ratingCounts).sort((a,b) => {
+                let valA = parseFloat(a.replace(',', '.'));
+                let valB = parseFloat(b.replace(',', '.'));
+                return valA - valB;
+            });
             chartInstances.push(new Chart(document.getElementById('ratingChart'), { type: 'bar', data: { labels: ratingLabels.map(r => r + " " + l.lblRatingSuffix), datasets: [{ label: l.lblBookCount, data: ratingLabels.map(r => ratingCounts[r]), backgroundColor: '#ffc107', borderRadius: 4 }] }, options: barChartOptions }));
 
             const extendedColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#8e44ad', '#2ecc71', '#bdc3c7'];
 
-            const formatCountsRaw = countBy(books, 'format');
+            // ==================================================
+            // YENİ: EPUB VE E-KİTAP İSİMLERİNİ BİRLEŞTİRME MANTIĞI
+            // ==================================================
+            const formatCountsRaw = {};
+            books.forEach(b => {
+                let f = b.format ? b.format.trim() : "Bilinmeyen";
+                let fLower = f.toLowerCase();
+                
+                // Epub veya türevleri gelirse "E-Kitap" olarak birleştir
+                if (fLower === 'epub' || fLower === 'e-kitap' || fLower === 'e-book') {
+                    f = 'E-Kitap';
+                } else if (fLower === 'kitap' || fLower === 'basılı kitap') {
+                    f = 'Basılı Kitap';
+                } else if (fLower === 'sesli') {
+                    f = 'Sesli';
+                } else {
+                    f = 'Bilinmeyen';
+                }
+
+                formatCountsRaw[f] = (formatCountsRaw[f] || 0) + 1;
+            });
+
             const formatTranslationMap = { "Basılı Kitap": l.fmtPrint, "E-Kitap": l.fmtEbook, "Sesli": l.fmtAudio, "Bilinmeyen": l.fmtUnknown };
             const formatLabels = Object.keys(formatCountsRaw).map(k => formatTranslationMap[k] || k);
             
@@ -263,7 +306,7 @@
             const countryTop9 = getTopNWithOther(countBy(books, 'country'), 9);
             chartInstances.push(new Chart(document.getElementById('countryChart'), { type: 'pie', data: { labels: countryTop9.labels, datasets: [{ data: countryTop9.data, backgroundColor: extendedColors.slice(0, countryTop9.labels.length), borderColor: isDark ? '#1e1e1e' : '#fff' }] }, options: pieChartOptions }));
 
-            const langTop9 = getTopNWithOther(countBy(books, 'originalLanguage'), 9);
+            const langTop9 = getTopNWithOther(countBy(books, 'originallanguage'), 9);
             chartInstances.push(new Chart(document.getElementById('languageChart'), { type: 'doughnut', data: { labels: langTop9.labels, datasets: [{ data: langTop9.data, backgroundColor: extendedColors.slice(0, langTop9.labels.length), borderColor: isDark ? '#1e1e1e' : '#fff' }] }, options: pieChartOptions }));
         }
 
