@@ -208,8 +208,17 @@
             const l = i18n[currentLang];
             const mapDataArray = [[l.lblCountry, l.lblBooksRead]];
             
-            const countryToISO = { "Portekiz": "PT", "ABD": "US", "Birleşik Krallık": "GB", "Çekya": "CZ", "Almanya": "DE", "Avusturya": "AT", "Çin": "CN", "Brezilya": "BR", "İsrail": "IL", "Rusya": "RU", "Fransa": "FR", "Türkiye": "TR", "İspanya": "ES", "İtalya": "IT", "Japonya": "JP", "Yunanistan": "GR", "Kolombiya": "CO", "Norveç": "NO", "İran": "IR", "Afganistan": "AF", "Güney Afrika": "ZA", "İsveç": "SE", "Güney Kore": "KR", "Slovenya": "SI", "Danimarka": "DK", "Polonya": "PL", "Nijerya": "NG", "Macaristan": "HU", "Mısır": "EG", "Arjantin": "AR", "Hindistan": "IN", "Şili": "CL" };
-
+            const countryToISO = { 
+                "Portekiz": "PT", "ABD": "US", "Amerika Birleşik Devletleri": "US", "Birleşik Krallık": "GB", 
+                "İngiltere": "GB", "İskoçya": "GB", "Çekya": "CZ", "Almanya": "DE", "Avusturya": "AT", 
+                "Çin": "CN", "Brezilya": "BR", "İsrail": "IL", "Rusya": "RU", "Fransa": "FR", 
+                "Türkiye": "TR", "İspanya": "ES", "İtalya": "IT", "Japonya": "JP", "Yunanistan": "GR", 
+                "Kolombiya": "CO", "Norveç": "NO", "İran": "IR", "Afganistan": "AF", "Güney Afrika": "ZA", 
+                "İsveç": "SE", "Güney Kore": "KR", "Slovenya": "SI", "Danimarka": "DK", "Polonya": "PL", 
+                "Nijerya": "NG", "Macaristan": "HU", "Mısır": "EG", "Arjantin": "AR", "Hindistan": "IN", 
+                "Şili": "CL", "Kırgızistan": "KG", "Kırgizistan": "KG", "Lübnan": "LB", "İsviçre": "CH", 
+                "İrlanda": "IE", "Kanada": "CA", "Meksika": "MX"
+            };
             for (const [countryName, count] of Object.entries(countryCounts)) { mapDataArray.push([countryToISO[countryName] || countryName, count]); }
             
             const data = google.visualization.arrayToDataTable(mapDataArray);
